@@ -164,8 +164,10 @@ def process_server_response(sock: socket, message_code: int):
         if message_code == 88:
             print(MESSAGES[3])
 
-        play = int(input(MESSAGES[message_code]))
-        sock.sendall(play.to_bytes(1, 'big'))
+        play = input(MESSAGES[message_code])
+        play_ord = ord(play)
+        print("Sending", play_ord)
+        sock.sendall(play_ord.to_bytes(1, 'big'))
 
 
 def concept_play_game():
