@@ -160,7 +160,7 @@ def get_connection_args(test: bool) -> tuple:
     return (host, port)
 
 def main():
-    connection_args = get_connection_args()
+    connection_args = get_connection_args(True)
 
     if len(connection_args) != 2:
         print("Usage: python client_game.py <host> <port>")
