@@ -1,6 +1,9 @@
-# source: https://realpython.com/python-sockets/
+# Adapted from: https://realpython.com/python-sockets/
 
-# !/usr/bin/env python3
+"""
+Copyright: Clinton Fernandes, February 2021
+e-mail: clintonf@gmail.com
+"""
 
 import socket
 import sys
@@ -42,29 +45,23 @@ hosts = {
 HOST = hosts['macair']  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 
-
-def print_data(data):
-    # print('Received (repr())', repr(data))
-    # print('Received (decode())', data.decode())
-    print('Received int.from_bytes()', int.from_bytes(data, 'big'))
-
-
 def play_game():
     identity = None
-    game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
+    game_board = []
     proposed_play = None
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
-        while (True):
-            # message = input("What message do you want to send?\n")
-            # s.sendall(message.encode())
-
+        while True:
             server_message = s.recv(1)
             message = int.from_bytes(server_message, 'big')
 
             if message == CODES["WELCOME"]:
+                game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
+                proposed_play = None
+                identity = None
+
                 print(MESSAGES[CODES["WELCOME"]])
                 identity = int.from_bytes(s.recv(1), 'big')
                 print("You are player", chr(identity))
@@ -86,8 +83,8 @@ def play_game():
                 print(MESSAGES[CODES["ACCEPTED"]])
                 try:
                     game_board[proposed_play] = identity
-                except IndexError as err:
-                    #I have not idea what's happening
+                except IndexError:
+                    # I have not idea what's happening
                     pass
 
                 proposed_play = None
@@ -96,6 +93,7 @@ def play_game():
 
             if message == CODES["WIN"]:
                 print(MESSAGES[CODES["WIN"]])
+
 
             if message == CODES["LOSE"]:
                 print(MESSAGES[CODES["LOSE"]])
@@ -114,7 +112,7 @@ def update_board(s) -> list:
 
     board_bytes = play.decode()
 
-    new_board = [ ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
+    new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
 
     return new_board
 
@@ -141,7 +139,6 @@ def print_board(board: list):
     count = 0
 
     for c in board:
-
         i = int(c)
 
         print(chr(i), end='')
@@ -149,6 +146,7 @@ def print_board(board: list):
         printSeparator(count)
 
         count += 1
+
 
 def output_board(board: list):
     """
@@ -193,12 +191,14 @@ def printSeparator(count: int):
 
 def get_connection_args(test: bool) -> tuple:
     if test:
-        return (HOST, PORT)
+        info = (HOST, PORT)
+        return info
 
     host = sys.argv[1]
     port = int(sys.argv[2])
 
-    return (host, port)
+    info = (host, port)
+    return info
 
 
 def main():
