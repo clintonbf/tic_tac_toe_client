@@ -1,0 +1,12 @@
+Usage: python client.py <host> <port>
+
+<host> is the IP address of the server
+<port> is the port number for the server
+
+For convenience, <host> and <port> may be hard-coded into the script to prevent the need to use command line arguments:
+- add the IP to the hosts dictionary
+- specify which host to use in HOST
+- specify which port to use in PORT
+- provide a True to the call to get_connection_args
+
+N.B. This script requires python >= 3.8

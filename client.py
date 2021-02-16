@@ -45,6 +45,7 @@ hosts = {
 HOST = hosts['macair']  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 
+
 def play_game():
     identity = None
     game_board = []
@@ -60,7 +61,6 @@ def play_game():
             if message == CODES["WELCOME"]:
                 game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
                 proposed_play = None
-                identity = None
 
                 print(MESSAGES[CODES["WELCOME"]])
                 identity = int.from_bytes(s.recv(1), 'big')
@@ -94,7 +94,6 @@ def play_game():
             if message == CODES["WIN"]:
                 print(MESSAGES[CODES["WIN"]])
 
-
             if message == CODES["LOSE"]:
                 print(MESSAGES[CODES["LOSE"]])
 
@@ -104,9 +103,10 @@ def play_game():
 
 def update_board(s) -> list:
     """
+    Updates the local game board.
 
-    :param s:
-    :return:
+    :param s: socket
+    :return: list
     """
     play = s.recv(9)
 
@@ -118,6 +118,13 @@ def update_board(s) -> list:
 
 
 def make_play(s: socket, invitation: str) -> int:
+    """
+    Makes a play.
+
+    :param s: socket
+    :param invitation: invitation to display to user
+    :return: int
+    """
     proposed_play = input(invitation)
 
     play_ord = ord(proposed_play)
@@ -148,23 +155,6 @@ def print_board(board: list):
         count += 1
 
 
-def output_board(board: list):
-    """
-    Prints the board in a formatted way.
-
-    :param board: the board. Values are strs.
-    :return:  void
-    """
-    count = 0
-
-    for c in board:
-        print(c, end='')
-
-        printSeparator(count)
-
-        count += 1
-
-
 def printSeparator(count: int):
     """
     Prints out formatted characters for the board.
@@ -189,7 +179,13 @@ def printSeparator(count: int):
         return
 
 
-def get_connection_args(test: bool) -> tuple:
+def get_connection_args(test: bool = False) -> tuple:
+    """
+    Gets the command line arguments.
+
+    :param test: whether or not to use in-script defined host and port settings
+    :return:
+    """
     if test:
         info = (HOST, PORT)
         return info
@@ -202,7 +198,7 @@ def get_connection_args(test: bool) -> tuple:
 
 
 def main():
-    connection_args = get_connection_args(True)
+    connection_args = get_connection_args()
 
     if len(connection_args) != 2:
         print("Usage: python client_game.py <host> <port>")
