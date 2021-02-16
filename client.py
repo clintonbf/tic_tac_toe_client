@@ -27,6 +27,11 @@ MESSAGES = {
     79: "You are O"
 }
 
+IDENTITIES = {
+    "X": 88,
+    "O": 79
+}
+
 hosts = {
     'emerald': '24.85.240.252',
     'emerald-home': '192.168.0.10',
@@ -46,7 +51,7 @@ def print_data(data):
 
 def play_game():
     identity = None
-    game_board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
+    game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
     proposed_play = None
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -59,25 +64,33 @@ def play_game():
             server_message = s.recv(1)
             message = int.from_bytes(server_message, 'big')
 
-            print(MESSAGES[message])
-
             if message == CODES["WELCOME"]:
                 print(MESSAGES[CODES["WELCOME"]])
-                identity = s.recv(1)
+                identity = int.from_bytes(s.recv(1), 'big')
+                print("You are player", chr(identity))
+
+                if identity == IDENTITIES["X"]:
+                    proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["INVITE"]:
                 game_board = update_board(s)
                 print_board(game_board)
 
                 proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+
             if message == CODES["INVALID"]:
                 print(MESSAGES[CODES["INVALID"]])
                 proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["ACCEPTED"]:
                 print(MESSAGES[CODES["ACCEPTED"]])
+                try:
+                    game_board[proposed_play] = identity
+                except IndexError as err:
+                    #I have not idea what's happening
+                    pass
 
-                game_board[proposed_play] = identity
+                proposed_play = None
 
                 print_board(game_board)
 
@@ -92,11 +105,16 @@ def play_game():
 
 
 def update_board(s) -> list:
-    new_board = []
+    """
 
-    for i in range(0, 9):
-        play = s.recv(1)
-        new_board[i] = play
+    :param s:
+    :return:
+    """
+    play = s.recv(9)
+
+    board_bytes = play.decode()
+
+    new_board = [ ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
 
     return new_board
 
@@ -105,7 +123,6 @@ def make_play(s: socket, invitation: str) -> int:
     proposed_play = input(invitation)
 
     play_ord = ord(proposed_play)
-    print("Sending", play_ord)
     s.sendall(play_ord.to_bytes(1, 'big'))
 
     return int(proposed_play)
@@ -115,7 +132,29 @@ def print_board(board: list):
     """
     Prints the board in a formatted way.
 
-    :param board: the board. Values are ints
+    :param board: the board. Values are ints.
+    :return:  void
+    """
+
+    print("Board update:")
+
+    count = 0
+
+    for c in board:
+
+        i = int(c)
+
+        print(chr(i), end='')
+
+        printSeparator(count)
+
+        count += 1
+
+def output_board(board: list):
+    """
+    Prints the board in a formatted way.
+
+    :param board: the board. Values are strs.
     :return:  void
     """
     count = 0
