@@ -9,4 +9,8 @@ For convenience, <host> and <port> may be hard-coded into the script to prevent 
 - specify which port to use in PORT
 - provide a True to the call to get_connection_args
 
+Known strange behaviour:
+- the game board sometimes does not output on the command line (Ubuntu Linux 20.04).
+- the game board consistently outputs as expected in the PyCharm IDE
+
 N.B. This script requires python >= 3.8
