@@ -7,6 +7,7 @@ e-mail: clintonf@gmail.com
 
 import socket
 import sys
+from game_data import GameData
 
 CODES = {
     "WELCOME": 1,
@@ -15,7 +16,9 @@ CODES = {
     "ACCEPTED": 6,
     "WIN": 7,
     "LOSE": 8,
-    "TIE": 9
+    "TIE": 9,
+    "DISCONNECT": 10,
+    "VERSION": 11
 }
 
 MESSAGES = {
@@ -27,7 +30,8 @@ MESSAGES = {
     8: "You lose!",
     9: "Tie game",
     88: "You are X",
-    79: "You are O"
+    79: "You are O",
+    11: "Version number"
 }
 
 IDENTITIES = {
@@ -50,20 +54,24 @@ def play_game():
     identity = None
     game_board = []
     proposed_play = None
+    bytes_to_expect = 1
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
         while True:
-            server_message = s.recv(1)
+            server_message = s.recv(bytes_to_expect)
             message = int.from_bytes(server_message, 'big')
+
+            if message == CODES["VERSION"]:
+                pass
 
             if message == CODES["WELCOME"]:
                 game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
                 proposed_play = None
 
                 print(MESSAGES[CODES["WELCOME"]])
-                identity = int.from_bytes(s.recv(1), 'big')
+                identity = int.from_bytes(s.recv(bytes_to_expect), 'big')
                 print("You are player", chr(identity))
 
                 if identity == IDENTITIES["X"]:
@@ -100,6 +108,56 @@ def play_game():
             if message == CODES["TIE"]:
                 print(MESSAGES[CODES["TIE"]])
 
+
+def play_protocol_one(s):
+    proposed_play = None
+    game_data = GameData()
+
+    while True:
+        server_message = s.recv(game_data.get_bytes_to_expect())
+        message = int.from_bytes(server_message, 'big')
+
+        if message == CODES["VERSION"]:
+            pass
+
+        if message == CODES["WELCOME"]:
+            print(MESSAGES[CODES["WELCOME"]])
+            game_data.set_identity(int.from_bytes(s.recv(game_data.get_bytes_to_expect()), 'big'))
+            print("You are player", chr(game_data.get_identity()))
+
+            if game_data.get_identity() == IDENTITIES["X"]:
+                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["INVITE"]:
+            game_data.set_game_board(update_board(s))
+            game_data.print_board()
+
+            proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["INVALID"]:
+            print(MESSAGES[CODES["INVALID"]])
+            proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["ACCEPTED"]:
+            print(MESSAGES[CODES["ACCEPTED"]])
+            try:
+                game_data.set_play(proposed_play)
+            except IndexError:
+                # I have not idea what's happening
+                pass
+
+            proposed_play = None
+
+            game_data.print_board()
+
+        if message == CODES["WIN"]:
+            print(MESSAGES[CODES["WIN"]])
+
+        if message == CODES["LOSE"]:
+            print(MESSAGES[CODES["LOSE"]])
+
+        if message == CODES["TIE"]:
+            print(MESSAGES[CODES["TIE"]])
 
 def update_board(s) -> list:
     """
