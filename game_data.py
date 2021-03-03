@@ -82,4 +82,4 @@ class GameData:
         return int(proposed_play)
 
     def get_version(self):
-        print(self.__version)
+        print("Protocol version", self.__version)

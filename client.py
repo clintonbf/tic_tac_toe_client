@@ -5,6 +5,7 @@ Copyright: Clinton Fernandes, February 2021
 e-mail: clintonf@gmail.com
 """
 
+import argparse
 import socket
 import sys
 from game_data import GameData
@@ -49,6 +50,7 @@ hosts = {
 
 HOST = hosts['macair']  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
+MAX_VERSION = 2
 
 def get_game_object(protocol_version: int = 1) -> GameData:
     """
@@ -62,13 +64,12 @@ def get_game_object(protocol_version: int = 1) -> GameData:
     if protocol_version == 2:
         return GameData_v2()
 
-def play_game(protocol_version: int = 1):
+def play_game(host: str, port: int, protocol_version: int = 1):
      with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((host, port))
 
         proposed_play = None
         game_data = get_game_object(protocol_version)
-        game_data.get_version()
 
         while True:
             server_message = s.recv(game_data.get_bytes_to_expect())
@@ -270,18 +271,34 @@ def get_connection_args(test: bool = False) -> tuple:
     return info
 
 
+def get_version_options() -> str:
+    string = "["
+
+    for i in range (1, MAX_VERSION):
+        string = string  + str(i) + " | "
+
+    string = string  + str(MAX_VERSION) + "]"
+
+    return string
+
+def create_arguments() -> argparse:
+    parser = argparse.ArgumentParser()
+
+    protocol_help = "protocol version " + get_version_options() + ", default = 1"
+
+    parser.add_argument("host", help="server IP address")
+    parser.add_argument("--version", help=protocol_help, type=int)
+    parser.add_argument("--port", help="server port #. Default = " + str(PORT))
+
+
+    return parser
+
 def main():
-    connection_args = get_connection_args()
-    protocol_version = None
+    args = create_arguments().parse_args()
+    version = args.version or 1
+    port = args.port or PORT
 
-    if len(connection_args) != 2 and len(connection_args) != 3:
-        print("Usage: python client_game.py <host> <port> [<protocol version>]")
-        exit(1)
-
-    if len(sys.argv) == 4:
-        protocol_version = int(sys.argv[3])
-
-    play_game(protocol_version)
+    play_game(args.host, port, version)
 
 if __name__ == "__main__":
     main()
