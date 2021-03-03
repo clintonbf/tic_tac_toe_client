@@ -256,24 +256,6 @@ def make_play(s: socket, invitation: str) -> int:
     return int(proposed_play)
 
 
-def get_connection_args(test: bool = False) -> tuple:
-    """
-    Gets the command line arguments.
-
-    :param test: whether or not to use in-script defined host and port settings
-    :return:
-    """
-    if test:
-        info = (HOST, PORT)
-        return info
-
-    host = sys.argv[1]
-    port = int(sys.argv[2])
-
-    info = (host, port)
-    return info
-
-
 def get_version_options() -> str:
     string = "["
 
