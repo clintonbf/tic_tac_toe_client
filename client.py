@@ -9,7 +9,6 @@ import argparse
 import socket
 import sys
 from game_data import GameData
-from game_data_v_2 import GameData_v2
 
 CODES = {
     "WELCOME": 1,
