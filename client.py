@@ -81,9 +81,7 @@ def play_game(host: str, port: int, protocol_version: int = 1):
                 pass
 
             if message == CODES["WELCOME"]:
-                print(MESSAGES[CODES["WELCOME"]])
-                game_data.set_identity(int.from_bytes(s.recv(game_data.get_bytes_to_expect()), 'big'))
-                print("You are player", chr(game_data.get_identity()))
+                game_data.process_welcome(s, MESSAGES[CODES["WELCOME"]])
 
                 if game_data.get_identity() == IDENTITIES["X"]:
                     proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])

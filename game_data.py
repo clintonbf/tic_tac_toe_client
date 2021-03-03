@@ -84,6 +84,12 @@ class GameData:
     def get_version(self):
         print("Protocol version", self.__version)
 
+    def process_welcome(self, s: socket, message: str):
+        print(message)
+
+        self.set_identity(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
+        print("You are player", chr(self.get_identity()))
+
 
 class GameData_v2(GameData):
     def __init__(self):
@@ -105,3 +111,7 @@ class GameData_v2(GameData):
         s.sendall(play_ord.to_bytes(1, 'big'))
 
         return int(proposed_play)
+
+    def process_welcome(self, s: socket, message: str):
+        super().process_welcome(s, message)
+        self.get_game_id(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
