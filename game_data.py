@@ -1,10 +1,12 @@
+import socket
+
 class GameData:
 
     def __init__(self):
         self.__identity = None
         self.__game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
         self.__bytes_to_expect = 1
-        self.__game_id = None
+        self.__version = 1
 
     def get_identity(self):
         return self.__identity
@@ -25,7 +27,7 @@ class GameData:
         self.__bytes_to_expect = bytes_to_expect
 
     def set_play(self, position):
-        self.__game_board[position] = chr(self.__identity)
+        self.__game_board[position] = self.__identity
 
     def print_board(self):
         """
@@ -71,4 +73,13 @@ class GameData:
             print('')
             return
 
-        
+    def make_play(self, s: socket, invitation: str):
+        proposed_play = input(invitation)
+
+        play_ord = ord(proposed_play)
+        s.sendall(play_ord.to_bytes(1, 'big'))
+
+        return int(proposed_play)
+
+    def get_version(self):
+        print(self.__version)

@@ -5,6 +5,7 @@ class GameData_v2(GameData):
     def __init__(self):
         super().__init__()
         self.__game_id = None
+        self.__version = 2
 
     def get_game_id(self):
         return self.__game_id

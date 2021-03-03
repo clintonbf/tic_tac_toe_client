@@ -50,55 +50,62 @@ hosts = {
 HOST = hosts['macair']  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 
+def get_game_object(protocol_version: int = 1) -> GameData:
+    """
+    Gets the correct game_data object.
 
-def play_game():
-    identity = None
-    game_board = []
-    proposed_play = None
-    bytes_to_expect = 1
+    :param protocol_version: protocol version of game
+    :return: GameData
+    """
+    if protocol_version == 1:
+        return GameData()
+    if protocol_version == 2:
+        return GameData_v2()
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+def play_game(protocol_version: int = 1):
+     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
+        proposed_play = None
+        game_data = get_game_object(protocol_version)
+        game_data.get_version()
+
         while True:
-            server_message = s.recv(bytes_to_expect)
+            server_message = s.recv(game_data.get_bytes_to_expect())
             message = int.from_bytes(server_message, 'big')
 
             if message == CODES["VERSION"]:
                 pass
 
             if message == CODES["WELCOME"]:
-                game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
-                proposed_play = None
-
                 print(MESSAGES[CODES["WELCOME"]])
-                identity = int.from_bytes(s.recv(bytes_to_expect), 'big')
-                print("You are player", chr(identity))
+                game_data.set_identity(int.from_bytes(s.recv(game_data.get_bytes_to_expect()), 'big'))
+                print("You are player", chr(game_data.get_identity()))
 
-                if identity == IDENTITIES["X"]:
+                if game_data.get_identity() == IDENTITIES["X"]:
                     proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["INVITE"]:
-                game_board = update_board(s)
-                print_board(game_board)
+                game_data.set_game_board(update_board(s))
+                game_data.print_board()
 
-                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+                proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["INVALID"]:
                 print(MESSAGES[CODES["INVALID"]])
-                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+                proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["ACCEPTED"]:
                 print(MESSAGES[CODES["ACCEPTED"]])
                 try:
-                    game_board[proposed_play] = identity
+                    game_data.set_play(proposed_play)
                 except IndexError:
                     # I have not idea what's happening
                     pass
 
                 proposed_play = None
 
-                print_board(game_board)
+                game_data.print_board()
 
             if message == CODES["WIN"]:
                 print(MESSAGES[CODES["WIN"]])
@@ -108,7 +115,6 @@ def play_game():
 
             if message == CODES["TIE"]:
                 print(MESSAGES[CODES["TIE"]])
-
 
 def play_protocol_one(s):
     proposed_play = None
@@ -133,11 +139,11 @@ def play_protocol_one(s):
             game_data.set_game_board(update_board(s))
             game_data.print_board()
 
-            proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+            proposed_play =  game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
         if message == CODES["INVALID"]:
             print(MESSAGES[CODES["INVALID"]])
-            proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+            proposed_play =  game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
         if message == CODES["ACCEPTED"]:
             print(MESSAGES[CODES["ACCEPTED"]])
@@ -246,52 +252,6 @@ def make_play(s: socket, invitation: str) -> int:
     return int(proposed_play)
 
 
-def print_board(board: list):
-    """
-    Prints the board in a formatted way.
-
-    :param board: the board. Values are ints.
-    :return:  void
-    """
-
-    print("Board update:")
-
-    count = 0
-
-    for c in board:
-        i = int(c)
-
-        print(chr(i), end='')
-
-        printSeparator(count)
-
-        count += 1
-
-
-def printSeparator(count: int):
-    """
-    Prints out formatted characters for the board.
-
-    :param count: int
-    :return: void
-    """
-    if count == 0 or count == 3 or count == 6:
-        print("|", end='')
-        return
-
-    if count == 1 or count == 4 or count == 7:
-        print("|", end='')
-        return
-
-    if count == 2 or count == 5:
-        print("\n-+-+-")
-        return
-
-    if count == 8:
-        print('')
-        return
-
-
 def get_connection_args(test: bool = False) -> tuple:
     """
     Gets the command line arguments.
@@ -312,13 +272,16 @@ def get_connection_args(test: bool = False) -> tuple:
 
 def main():
     connection_args = get_connection_args()
+    protocol_version = None
 
-    if len(connection_args) != 2:
-        print("Usage: python client_game.py <host> <port>")
+    if len(connection_args) != 2 and len(connection_args) != 3:
+        print("Usage: python client_game.py <host> <port> [<protocol version>]")
         exit(1)
 
-    play_game()
+    if len(sys.argv) == 4:
+        protocol_version = int(sys.argv[3])
 
+    play_game(protocol_version)
 
 if __name__ == "__main__":
     main()
