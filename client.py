@@ -7,7 +7,6 @@ e-mail: clintonf@gmail.com
 
 import argparse
 import socket
-import sys
 from game_data import GameData
 from game_data import GameData_v2
 
@@ -84,7 +83,7 @@ def play_game(host: str, port: int, protocol_version: int = 1):
                 game_data.process_welcome(s, MESSAGES[CODES["WELCOME"]])
 
                 if game_data.get_identity() == IDENTITIES["X"]:
-                    proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+                    proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["INVITE"]:
                 game_data.set_game_board(update_board(s))
@@ -118,110 +117,6 @@ def play_game(host: str, port: int, protocol_version: int = 1):
                 print(MESSAGES[CODES["TIE"]])
 
 
-def play_protocol_one(s):
-    proposed_play = None
-    game_data = GameData()
-
-    while True:
-        server_message = s.recv(game_data.get_bytes_to_expect())
-        message = int.from_bytes(server_message, 'big')
-
-        if message == CODES["VERSION"]:
-            pass
-
-        if message == CODES["WELCOME"]:
-            print(MESSAGES[CODES["WELCOME"]])
-            game_data.set_identity(int.from_bytes(s.recv(game_data.get_bytes_to_expect()), 'big'))
-            print("You are player", chr(game_data.get_identity()))
-
-            if game_data.get_identity() == IDENTITIES["X"]:
-                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["INVITE"]:
-            game_data.set_game_board(update_board(s))
-            game_data.print_board()
-
-            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["INVALID"]:
-            print(MESSAGES[CODES["INVALID"]])
-            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["ACCEPTED"]:
-            print(MESSAGES[CODES["ACCEPTED"]])
-            try:
-                game_data.set_play(proposed_play)
-            except IndexError:
-                # I have not idea what's happening
-                pass
-
-            proposed_play = None
-
-            game_data.print_board()
-
-        if message == CODES["WIN"]:
-            print(MESSAGES[CODES["WIN"]])
-
-        if message == CODES["LOSE"]:
-            print(MESSAGES[CODES["LOSE"]])
-
-        if message == CODES["TIE"]:
-            print(MESSAGES[CODES["TIE"]])
-
-
-def play_protocol_two(s):
-    proposed_play = None
-    game_data = GameData_v2()
-    number_of_bytes = 1
-
-    while True:
-        server_message = s.recv(game_data.get_bytes_to_expect())
-        message = int.from_bytes(server_message, 'big')
-
-        if message == CODES["VERSION"]:
-            pass
-
-        if message == CODES["WELCOME"]:
-            print(MESSAGES[CODES["WELCOME"]])
-            game_data.set_game_id(int.from_bytes(s.recv(number_of_bytes), 'big'))
-            game_data.set_identity(int.from_bytes(s.recv(number_of_bytes), 'big'))
-            print("You are player", chr(game_data.get_identity()))
-
-            if game_data.get_identity() == IDENTITIES["X"]:
-                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["INVITE"]:
-            game_data.set_game_board(update_board(s))
-            game_data.print_board()
-
-            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["INVALID"]:
-            print(MESSAGES[CODES["INVALID"]])
-            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
-
-        if message == CODES["ACCEPTED"]:
-            print(MESSAGES[CODES["ACCEPTED"]])
-            try:
-                game_data.set_play(proposed_play)
-            except IndexError:
-                # I have no idea what's happening
-                pass
-
-            proposed_play = None
-
-            game_data.print_board()
-
-        if message == CODES["WIN"]:
-            print(MESSAGES[CODES["WIN"]])
-
-        if message == CODES["LOSE"]:
-            print(MESSAGES[CODES["LOSE"]])
-
-        if message == CODES["TIE"]:
-            print(MESSAGES[CODES["TIE"]])
-
-
 def update_board(s) -> list:
     """
     Updates the local game board.
@@ -236,22 +131,6 @@ def update_board(s) -> list:
     new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
 
     return new_board
-
-
-def make_play(s: socket, invitation: str) -> int:
-    """
-    Makes a play.
-
-    :param s: socket
-    :param invitation: invitation to display to user
-    :return: int
-    """
-    proposed_play = input(invitation)
-
-    play_ord = ord(proposed_play)
-    s.sendall(play_ord.to_bytes(1, 'big'))
-
-    return int(proposed_play)
 
 
 def get_version_options() -> str:
