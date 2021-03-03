@@ -1,5 +1,47 @@
 import socket
 
+
+def printSeparator(count: int):
+    """
+    Prints out formatted characters for the board.
+
+    :param count: int
+    :return: void
+    """
+    if count == 0 or count == 3 or count == 6:
+        print("|", end='')
+        return
+
+    if count == 1 or count == 4 or count == 7:
+        print("|", end='')
+        return
+
+    if count == 2 or count == 5:
+        print('')
+        print("-+-+-")
+        return
+
+    if count == 8:
+        print('')
+        return
+
+
+def update_board(s) -> list:
+    """
+    Updates the local game board.
+
+    :param s: socket
+    :return: list
+    """
+    play = s.recv(9)
+
+    board_bytes = play.decode()
+
+    new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
+
+    return new_board
+
+
 class GameData:
 
     def __init__(self):
@@ -20,8 +62,8 @@ class GameData:
     def set_identity(self, identity):
         self.__identity = identity
 
-    def set_game_board(self, s:socket):
-        self.__game_board = self.update_board(s)
+    def set_game_board(self, s: socket):
+        self.__game_board = update_board(s)
 
     def set_bytes_to_expect(self, bytes_to_expect):
         self.__bytes_to_expect = bytes_to_expect
@@ -33,7 +75,6 @@ class GameData:
         """
         Prints the board in a formatted way.
 
-        :param board: the board. Values are ints.
         :return:  void
         """
 
@@ -44,34 +85,16 @@ class GameData:
         for c in self.__game_board:
             i = int(c)
 
-            print(chr(i), end='')
+            char_to_print = chr(i)
 
-            self.printSeparator(count)
+            if char_to_print in ('X', 'O'):
+                print(chr(i), end='')
+            else:
+                print(" ", end='')
+
+            printSeparator(count)
 
             count += 1
-
-    def printSeparator(self, count: int):
-        """
-        Prints out formatted characters for the board.
-
-        :param count: int
-        :return: void
-        """
-        if count == 0 or count == 3 or count == 6:
-            print("|", end='')
-            return
-
-        if count == 1 or count == 4 or count == 7:
-            print("|", end='')
-            return
-
-        if count == 2 or count == 5:
-            print("\n-+-+-")
-            return
-
-        if count == 8:
-            print('')
-            return
 
     def make_play(self, s: socket, invitation: str):
         proposed_play = input(invitation)
@@ -90,21 +113,6 @@ class GameData:
         self.set_identity(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
         print("You are player", chr(self.get_identity()))
 
-    def update_board(self, s) -> list:
-        """
-        Updates the local game board.
-
-        :param s: socket
-        :return: list
-        """
-        play = s.recv(9)
-
-        board_bytes = play.decode()
-
-        new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
-
-        return new_board
-
 
 class GameData_v2(GameData):
     def __init__(self):
@@ -115,8 +123,8 @@ class GameData_v2(GameData):
     def get_game_id(self):
         return self.__game_id
 
-    def set_game_id(self, id):
-        self.__game_id = id
+    def set_game_id(self, new_id):
+        self.__game_id = new_id
 
     def make_play(self, s: socket, invitation: str):
         proposed_play = input(invitation)
