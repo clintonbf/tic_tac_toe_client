@@ -90,7 +90,7 @@ class GameData:
         self.set_identity(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
         print("You are player", chr(self.get_identity()))
 
-    def update_board(s) -> list:
+    def update_board(self, s) -> list:
         """
         Updates the local game board.
 
@@ -129,4 +129,5 @@ class GameData_v2(GameData):
 
     def process_welcome(self, s: socket, message: str):
         super().process_welcome(s, message)
-        self.get_game_id(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
+        sent_id = int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big')
+        self.set_game_id(sent_id)
