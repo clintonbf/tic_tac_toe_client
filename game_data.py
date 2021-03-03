@@ -20,8 +20,8 @@ class GameData:
     def set_identity(self, identity):
         self.__identity = identity
 
-    def set_game_board(self, board):
-        self.__game_board = board
+    def set_game_board(self, s:socket):
+        self.__game_board = self.update_board(s)
 
     def set_bytes_to_expect(self, bytes_to_expect):
         self.__bytes_to_expect = bytes_to_expect
@@ -89,6 +89,21 @@ class GameData:
 
         self.set_identity(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
         print("You are player", chr(self.get_identity()))
+
+    def update_board(s) -> list:
+        """
+        Updates the local game board.
+
+        :param s: socket
+        :return: list
+        """
+        play = s.recv(9)
+
+        board_bytes = play.decode()
+
+        new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
+
+        return new_board
 
 
 class GameData_v2(GameData):

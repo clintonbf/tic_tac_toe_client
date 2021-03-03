@@ -86,7 +86,7 @@ def play_game(host: str, port: int, protocol_version: int = 1):
                     proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
             if message == CODES["INVITE"]:
-                game_data.set_game_board(update_board(s))
+                game_data.set_game_board(s)
                 game_data.print_board()
 
                 proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
@@ -115,22 +115,6 @@ def play_game(host: str, port: int, protocol_version: int = 1):
 
             if message == CODES["TIE"]:
                 print(MESSAGES[CODES["TIE"]])
-
-
-def update_board(s) -> list:
-    """
-    Updates the local game board.
-
-    :param s: socket
-    :return: list
-    """
-    play = s.recv(9)
-
-    board_bytes = play.decode()
-
-    new_board = [ord(board_bytes[i:i + 1]) for i in range(0, len(board_bytes), 1)]
-
-    return new_board
 
 
 def get_version_options() -> str:
