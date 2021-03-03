@@ -4,6 +4,7 @@ class GameData:
         self.__identity = None
         self.__game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
         self.__bytes_to_expect = 1
+        self.__game_id = None
 
     def get_identity(self):
         return self.__identity
@@ -47,7 +48,6 @@ class GameData:
 
             count += 1
 
-
     def printSeparator(self, count: int):
         """
         Prints out formatted characters for the board.
@@ -70,3 +70,5 @@ class GameData:
         if count == 8:
             print('')
             return
+
+        

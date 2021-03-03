@@ -8,6 +8,7 @@ e-mail: clintonf@gmail.com
 import socket
 import sys
 from game_data import GameData
+from game_data_v_2 import GameData_v2
 
 CODES = {
     "WELCOME": 1,
@@ -158,6 +159,60 @@ def play_protocol_one(s):
 
         if message == CODES["TIE"]:
             print(MESSAGES[CODES["TIE"]])
+
+
+def play_protocol_two(s):
+    proposed_play = None
+    game_data = GameData_v2()
+    number_of_bytes = 1
+
+    while True:
+        server_message = s.recv(game_data.get_bytes_to_expect())
+        message = int.from_bytes(server_message, 'big')
+
+        if message == CODES["VERSION"]:
+            pass
+
+        if message == CODES["WELCOME"]:
+            print(MESSAGES[CODES["WELCOME"]])
+            game_data.set_game_id(int.from_bytes(s.recv(number_of_bytes), 'big'))
+            game_data.set_identity(int.from_bytes(s.recv(number_of_bytes), 'big'))
+            print("You are player", chr(game_data.get_identity()))
+
+            if game_data.get_identity() == IDENTITIES["X"]:
+                proposed_play = make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["INVITE"]:
+            game_data.set_game_board(update_board(s))
+            game_data.print_board()
+
+            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["INVALID"]:
+            print(MESSAGES[CODES["INVALID"]])
+            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
+
+        if message == CODES["ACCEPTED"]:
+            print(MESSAGES[CODES["ACCEPTED"]])
+            try:
+                game_data.set_play(proposed_play)
+            except IndexError:
+                # I have no idea what's happening
+                pass
+
+            proposed_play = None
+
+            game_data.print_board()
+
+        if message == CODES["WIN"]:
+            print(MESSAGES[CODES["WIN"]])
+
+        if message == CODES["LOSE"]:
+            print(MESSAGES[CODES["LOSE"]])
+
+        if message == CODES["TIE"]:
+            print(MESSAGES[CODES["TIE"]])
+
 
 def update_board(s) -> list:
     """
