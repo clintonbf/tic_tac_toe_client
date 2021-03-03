@@ -9,6 +9,7 @@ import argparse
 import socket
 import sys
 from game_data import GameData
+from game_data import GameData_v2
 
 CODES = {
     "WELCOME": 1,
@@ -51,6 +52,7 @@ HOST = hosts['macair']  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 MAX_VERSION = 2
 
+
 def get_game_object(protocol_version: int = 1) -> GameData:
     """
     Gets the correct game_data object.
@@ -63,8 +65,9 @@ def get_game_object(protocol_version: int = 1) -> GameData:
     if protocol_version == 2:
         return GameData_v2()
 
+
 def play_game(host: str, port: int, protocol_version: int = 1):
-     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
 
         proposed_play = None
@@ -116,6 +119,7 @@ def play_game(host: str, port: int, protocol_version: int = 1):
             if message == CODES["TIE"]:
                 print(MESSAGES[CODES["TIE"]])
 
+
 def play_protocol_one(s):
     proposed_play = None
     game_data = GameData()
@@ -139,11 +143,11 @@ def play_protocol_one(s):
             game_data.set_game_board(update_board(s))
             game_data.print_board()
 
-            proposed_play =  game_data.make_play(s, MESSAGES[CODES["INVITE"]])
+            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
         if message == CODES["INVALID"]:
             print(MESSAGES[CODES["INVALID"]])
-            proposed_play =  game_data.make_play(s, MESSAGES[CODES["INVITE"]])
+            proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
         if message == CODES["ACCEPTED"]:
             print(MESSAGES[CODES["ACCEPTED"]])
@@ -273,12 +277,13 @@ def get_connection_args(test: bool = False) -> tuple:
 def get_version_options() -> str:
     string = "["
 
-    for i in range (1, MAX_VERSION):
-        string = string  + str(i) + " | "
+    for i in range(1, MAX_VERSION):
+        string = string + str(i) + " | "
 
-    string = string  + str(MAX_VERSION) + "]"
+    string = string + str(MAX_VERSION) + "]"
 
     return string
+
 
 def create_arguments() -> argparse:
     parser = argparse.ArgumentParser()
@@ -289,8 +294,8 @@ def create_arguments() -> argparse:
     parser.add_argument("--version", help=protocol_help, type=int)
     parser.add_argument("--port", help="server port #. Default = " + str(PORT))
 
-
     return parser
+
 
 def main():
     args = create_arguments().parse_args()
@@ -298,6 +303,7 @@ def main():
     port = args.port or PORT
 
     play_game(args.host, port, version)
+
 
 if __name__ == "__main__":
     main()
