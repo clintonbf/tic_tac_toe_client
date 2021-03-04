@@ -32,7 +32,8 @@ MESSAGES = {
     9: "Tie game",
     88: "You are X",
     79: "You are O",
-    11: "Version number"
+    11: "Version number",
+    10: "Opponent has disconnected. Please stand by."
 }
 
 IDENTITIES = {
@@ -116,6 +117,9 @@ def play_game(host: str, port: int, protocol_version: int = 1):
 
             if message == CODES["TIE"]:
                 print(MESSAGES[CODES["TIE"]])
+
+            if message == CODES["DISCONNECT"]:
+                print(MESSAGES[CODES["DISCONNECT"]])
 
 
 def get_version_options() -> str:
