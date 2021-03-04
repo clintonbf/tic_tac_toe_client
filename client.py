@@ -52,7 +52,7 @@ PORT = 65432  # The port used by the server
 MAX_VERSION = 2
 
 
-def get_game_object(protocol_version: int = 1) -> GameData:
+def get_game_object(protocol_version: int) -> GameData:
     """
     Gets the correct game_data object.
 
@@ -81,6 +81,7 @@ def play_game(host: str, port: int, protocol_version: int = 1):
 
             if message == CODES["WELCOME"]:
                 game_data.process_welcome(s, MESSAGES[CODES["WELCOME"]])
+                print(game_data)
 
                 if game_data.get_identity() == IDENTITIES["X"]:
                     proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
