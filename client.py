@@ -142,8 +142,15 @@ def create_arguments() -> argparse:
 
 def main():
     args = create_arguments().parse_args()
-    version = args.version or 1
-    port = args.port or PORT
+    try:
+        version = int(args.version)
+    except TypeError:
+        version = 1
+
+    try:
+        port = int(args.port)
+    except TypeError:
+        port = PORT
 
     play_game(args.host, port, version)
 
