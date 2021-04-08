@@ -97,9 +97,16 @@ class GameData:
             count += 1
 
     def make_play(self, s: socket, invitation: str):
-        proposed_play = input(invitation)
+        proposed_play = -1
 
-        play_ord = ord(proposed_play)
+        while 0 >= proposed_play >= 8:
+            proposed_play = input(invitation)
+
+            if not self.is_play_valid(proposed_play):
+                print("Invalid play")
+                proposed_play = -1
+
+        play_ord = ord(proposed_play)  # This might need to change to ints instead of ASCII ordinal values
         s.sendall(play_ord.to_bytes(1, 'big'))
 
         return int(proposed_play)
@@ -115,6 +122,23 @@ class GameData:
 
         self.set_identity(int.from_bytes(s.recv(self.get_bytes_to_expect()), 'big'))
         print("You are player", chr(self.get_identity()))
+
+    def check_if_spot_is_played(self, play: int):
+        return self.__game_board[play] == 45
+
+    def is_play_valid(self, play: str) -> bool:
+        try:
+            val = int(play)
+        except ValueError:
+            return False
+
+        if 0 >= val >= 8:
+            return False
+
+        if not self.check_if_spot_is_played(val):
+            return False
+
+        return True
 
     def __str__(self):
         me = "Protocol version: " + str(self.get_version()) + " Player identity: " + chr(self.get_identity())
@@ -148,5 +172,16 @@ class GameData_v2(GameData):
         self.set_game_id(sent_id)
 
     def __str__(self):
-        me = "Game ID: " + str(self.__game_id) + " Protocol version: " + str(self.get_version()) +  " Player identity: " + chr(self.get_identity())
+        me = "Game ID: " + str(self.__game_id) + " Protocol version: " + str(
+            self.get_version()) + " Player identity: " + chr(self.get_identity())
         return me
+
+
+class GameData_a4(GameData):
+    def __init__(self):
+        super().__init__()
+        self.__uid = None
+        super().set_version(4)
+
+    def set_uid(self, new_uid):
+        self.__uid = new_uid
