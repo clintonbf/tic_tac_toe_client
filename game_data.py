@@ -1,5 +1,7 @@
 import socket
 
+UID_LENGTH = 4
+
 
 def printSeparator(count: int):
     """
@@ -49,6 +51,7 @@ class GameData:
         self.__game_board = [45, 45, 45, 45, 45, 45, 45, 45, 45]
         self.__bytes_to_expect = 1
         self.__version = 1
+        self.__adversary = None
 
     def get_identity(self):
         return self.__identity
@@ -59,8 +62,13 @@ class GameData:
     def get_bytes_to_expect(self):
         return self.__bytes_to_expect
 
-    def set_identity(self, identity):
-        self.__identity = identity
+    def set_identity(self, identity_code:int):
+        self.__identity = 88 if identity_code == 1 else 79
+
+        self.__adversary = 79 if identity_code == 88 else 88
+
+    def get_adversary(self) -> int:
+        return self.__adversary
 
     def set_game_board(self, s: socket):
         self.__game_board = update_board(s)
@@ -127,21 +135,16 @@ class GameData:
         return self.__game_board[play] == 45
 
     def is_play_valid(self, play: str) -> bool:
-        try:
-            val = int(play)
-        except ValueError:
+        if not play.strip().isdigit():  # Strangely, this returns false if value is negative
             return False
 
-        if 0 >= val >= 8:
-            return False
-
-        if not self.check_if_spot_is_played(val):
+        if not self.check_if_spot_is_played(int(play)):
             return False
 
         return True
 
     def __str__(self):
-        me = "Protocol version: " + str(self.get_version()) + " Player identity: " + chr(self.get_identity())
+        me = "Protocol version: " + str(self.get_version()) + " Player identity_code: " + chr(self.get_identity())
         return me
 
 
@@ -173,7 +176,7 @@ class GameData_v2(GameData):
 
     def __str__(self):
         me = "Game ID: " + str(self.__game_id) + " Protocol version: " + str(
-            self.get_version()) + " Player identity: " + chr(self.get_identity())
+            self.get_version()) + " Player identity_code: " + chr(self.get_identity())
         return me
 
 
@@ -183,5 +186,35 @@ class GameData_a4(GameData):
         self.__uid = None
         super().set_version(4)
 
-    def set_uid(self, new_uid):
+    def set_uid(self, new_uid: int):
         self.__uid = new_uid
+
+    def get_uid(self) -> int:
+        return self.__uid
+
+    def get_uid_as_bytes(self) -> bytes:
+        return int(self.__uid).to_bytes(UID_LENGTH, 'big')
+
+    def update_board(self, place, player):
+        self.__game_board[place] = player
+
+    def make_play(self, s: socket, invitation: str) -> str:
+        proposed_play = -1
+
+        while 0 >= proposed_play >= 8:
+            proposed_play = input(invitation)
+
+            if not self.is_play_valid(proposed_play):
+                print("Invalid play")
+                proposed_play = -1
+
+        if proposed_play == 'q':
+            proposed_play = 'Q'
+
+        return proposed_play
+
+    def is_play_valid(self, play: str) -> bool:
+        if play == 'q' or play == 'Q':
+            return True
+
+        return super().is_play_valid(play)
