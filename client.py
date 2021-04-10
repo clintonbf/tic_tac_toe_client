@@ -95,8 +95,11 @@ class RESPONSE_MESSAGES(enum.Enum):
     GAME_ERRORS.INVALID_ACTION = "Invalid play"
     GAME_ERRORS.ACTION_OUT_OF_TURN = "Not your turn"
 
+
 class REQ_CONTEXTS(enum.Enum):
+    CONFIRM_RULESET = 1
     MAKE_MOVE = 1
+    QUIT = 1
 
 
 class UPD_CONTEXTS(enum.Enum):
@@ -127,12 +130,6 @@ STATUS_MESSAGES = {
     50: "invalid action",
     51: "action out of turn"
 }
-
-SUCCESS_MSGS = {10: "Success"}
-UPDATE_MSGS = {20: "Update"}
-
-SERVER_ERRORS = {40: "Server error"}
-GAME_ERRORS = {50: "Invalid action", 51: "Action out of turn"}
 
 hosts = {
     'emerald': '24.85.240.252',
@@ -321,11 +318,13 @@ def take_turn(game_data: GameData_a4, s: socket):
     proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
     if proposed_play == 'Q':
-        packet = create_play_packet(game_data.get_uid(), 1, REQ_TYPES.META_ACTION.value)
+        packet = create_play_packet(game_data.get_uid(), REQ_TYPES.META_ACTION.value, REQ_CONTEXTS.QUIT.value, 0)
     else:
-        packet = create_play_packet(game_data.get_uid(), int(proposed_play))
+        packet = create_play_packet(game_data.get_uid(), REQ_TYPES.GAME_ACTION.value, REQ_CONTEXTS.MAKE_MOVE.value,
+                                    int(proposed_play))
 
-    send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
+    s.sendall(packet)  # Sending a payload on a quit. Technically there shouldn't be one
+    # send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
 
     # Now get confirmation from Server
     play_response = get_message(s)
@@ -344,15 +343,23 @@ def take_turn(game_data: GameData_a4, s: socket):
         return False
 
 
-def create_play_packet(uid: int, proposed_play: int, msg_type: int = REQ_TYPES.GAME_ACTION) -> [bytes]:
-    packet = []
+def create_play_packet(uid: int, msg_type: int, msg_context: int, proposed_play: int) -> [bytes]:
+    uuid_str = str(uid)
+    msg_type_str = str(msg_type)
+    msg_context_str = str(msg_context)
+    p_play_str = str(proposed_play)
+    payload_length_str = str(len(p_play_str))
 
-    packet.append(convert_to_bytes(uid, 4))
-    packet.append(convert_to_bytes(msg_type))
-    packet.append(convert_to_bytes(REQ_CONTEXTS.MAKE_MOVE))
-    payload_length = 1
-    packet.append(convert_to_bytes(payload_length))
-    packet.append(convert_to_bytes(proposed_play, payload_length))
+    packet_as_string = uuid_str + msg_type_str + msg_context_str + payload_length_str + p_play_str
+    packet = packet_as_string.encode()
+
+    # packet = []
+    # packet.append(convert_to_bytes(uid, 4))
+    # packet.append(convert_to_bytes(msg_type))
+    # packet.append(convert_to_bytes(REQ_CONTEXTS.MAKE_MOVE))
+    # payload_length = 1
+    # packet.append(convert_to_bytes(payload_length_str))
+    # packet.append(convert_to_bytes(proposed_play, payload_length_str))
 
     return packet
 
@@ -387,22 +394,27 @@ def handshake(s: socket) -> int:
     :param s: {socket}  
     :return: {int} uid of player
     """
-    packet = []
+    # packet = []
+    #
+    # # Start with 4 'empty' bytes
+    # empty_byte = 0
+    # confirmation = 1
+    # rule_set = 1
+    # protocol_version = 1
+    # game_id = 1
 
-    empty_byte = 0
-    confirmation = 1
-    rule_set = 1
-    protocol_version = 1
-    game_id = 1
+    # packet.append(empty_byte.to_bytes(4, 'big'))
+    # packet.append(confirmation.to_bytes(1, 'big'))
+    # packet.append(rule_set.to_bytes(1, 'big'))
+    # packet.append(protocol_version.to_bytes(1, 'big'))
+    # packet.append(game_id.to_bytes(1, 'big'))
 
-    # Start with 4 'empty' bytes
-    packet.append(empty_byte.to_bytes(4, 'big'))
-    packet.append(confirmation.to_bytes(1, 'big'))
-    packet.append(rule_set.to_bytes(1, 'big'))
-    packet.append(protocol_version.to_bytes(1, 'big'))
-    packet.append(game_id.to_bytes(1, 'big'))
+    # s.sendall(packet)
 
-    s.sendall(packet)
+    packet_as_string = "00001111"
+    packet_as_byes = packet_as_string.encode()
+
+    s.send(packet_as_byes)
 
     uid = get_uid(s)
 
