@@ -218,3 +218,8 @@ class GameData_a4(GameData):
             return True
 
         return super().is_play_valid(play)
+
+    def __str__(self):
+        me = "Game ID: " + str(self.__uid) + " Protocol version: " + str(
+            self.get_version()) + " Player identity_code: " + chr(self.get_identity())
+        return me
