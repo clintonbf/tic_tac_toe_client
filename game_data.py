@@ -202,14 +202,11 @@ class GameData_a4(GameData):
         self.__game_board[place] = player
 
     def make_play(self, s: socket, invitation: str) -> str:
-        proposed_play = -1
+        proposed_play = input(invitation)
 
-        while proposed_play < 0 or proposed_play > 8:
+        while not self.is_play_valid(proposed_play):
+            print("Invalid play")
             proposed_play = input(invitation)
-
-            if not self.is_play_valid(proposed_play):
-                print("Invalid play")
-                proposed_play = -1
 
         if proposed_play == 'q':
             proposed_play = 'Q'

@@ -301,6 +301,8 @@ def get_uid(s: socket) -> int:
     payload_length = int.from_bytes(s.recv(1), 'big')
     uid = int.from_bytes(s.recv(payload_length), 'big')
 
+    print("Payload length is", )
+
     if msg_type == 32:
         msg_code = uid
         print(STATUS_MESSAGES[msg_code])
