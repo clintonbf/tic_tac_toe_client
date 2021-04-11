@@ -296,12 +296,14 @@ def handshake(s: socket) -> int:
     empty_byte = 0
     confirmation = 1
     rule_set = 1
+    payload_length = 2
     protocol_version = 1
     game_id = 1
 
     s.sendall(empty_byte.to_bytes(4, 'big'))
     s.sendall(confirmation.to_bytes(1, 'big'))
     s.sendall(rule_set.to_bytes(1, 'big'))
+    s.sendall(payload_length.to_bytes(1, 'big'))
     s.sendall(protocol_version.to_bytes(1, 'big'))
     s.sendall(game_id.to_bytes(1, 'big'))
 
