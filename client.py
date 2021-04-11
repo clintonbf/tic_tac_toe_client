@@ -81,19 +81,43 @@ class CLIENT_ERRORS(enum.Enum):
     INVALID_PAYLOAD = 34
 
 
+class CLIENT_ERROR_MSGS(enum.Enum):
+    INVALID_REQUEST = "Invalid request"
+    INVALID_UID = "Invalid uid supplied"
+    INVALID_TYPE = "Invalid msg_type"
+    INVALID_CONTEXT = "Invalid context supplied"
+    INVALID_PAYLOAD = "Invalid payload supplied"
+
+
 class GAME_ERRORS(enum.Enum):
     INVALID_ACTION = 50
     ACTION_OUT_OF_TURN = 51
 
 
-class RESPONSE_MESSAGES(enum.Enum):
-    CLIENT_ERRORS.INVALID_REQUEST = "Invalid request"
-    CLIENT_ERRORS.INVALID_UID = "Invalid uid supplied"
-    CLIENT_ERRORS.INVALID_TYPE = "Invalid msg_type"
-    CLIENT_ERRORS.INVALID_CONTEXT = "Invalid context supplied"
-    CLIENT_ERRORS.INVALID_PAYLOAD = "Invalid payload supplied"
-    GAME_ERRORS.INVALID_ACTION = "Invalid play"
-    GAME_ERRORS.ACTION_OUT_OF_TURN = "Not your turn"
+class GAME_ERROR_MSGS(enum.Enum):
+    INVALID_ACTION = "Invalid play"
+    ACTION_OUT_OF_TURN = "Not your turn"
+
+
+RESPONSE_MESSAGES = {
+    CLIENT_ERRORS.INVALID_REQUEST.value: "Invalid request",
+    CLIENT_ERRORS.INVALID_UID.value: "Invalid uid supplied",
+    CLIENT_ERRORS.INVALID_TYPE.value: "Invalid msg_type",
+    CLIENT_ERRORS.INVALID_CONTEXT.value: "Invalid context supplied",
+    CLIENT_ERRORS.INVALID_PAYLOAD.value: "Invalid payload supplied",
+    GAME_ERRORS.INVALID_ACTION.value: "Invalid play",
+    GAME_ERRORS.ACTION_OUT_OF_TURN.value: "Not your turn",
+}
+
+
+# class RESPONSE_MESSAGES(enum.Enum):
+#     CLIENT_ERRORS.INVALID_REQUEST = "Invalid request"
+#     CLIENT_ERRORS.INVALID_UID = "Invalid uid supplied"
+#     CLIENT_ERRORS.INVALID_TYPE.value = "Invalid msg_type"
+#     CLIENT_ERRORS.INVALID_CONTEXT.value = "Invalid context supplied"
+#     CLIENT_ERRORS.INVALID_PAYLOAD.value = "Invalid payload supplied"
+#     GAME_ERRORS.INVALID_ACTION.value = "Invalid play"
+#     GAME_ERRORS.ACTION_OUT_OF_TURN.value = "Not your turn"
 
 
 class REQ_CONTEXTS(enum.Enum):
@@ -114,11 +138,16 @@ class OUTCOMES(enum.Enum):
     TIE = 3
 
 
-class EOF_MESSAGES(enum.Enum):
-    OUTCOMES.WIN = " win!"
-    OUTCOMES.LOSS = " lose!"
-    OUTCOMES.TIE = " tie!"
+# class EOF_MESSAGES(enum.Enum):
+#     OUTCOMES.WIN = " win!"
+#     OUTCOMES.LOSS = " lose!"
+#     OUTCOMES.TIE = " tie!"
 
+EOF_MESSAGES = {
+    OUTCOMES.WIN.value: " win!",
+    OUTCOMES.LOSS.value: "lose!",
+    OUTCOMES.TIE.value: " tie!"
+}
 
 STATUS_MESSAGES = {
     10: "success",
@@ -139,7 +168,8 @@ hosts = {
 }
 
 HOST = hosts['macair']  # The server's hostname or IP address
-PORT = 65432  # The port used by the server
+# PORT = 65432  # The port used by the server
+PORT = 40000  # The port used by the server
 MAX_VERSION = 4
 GAME_ID = 1
 
@@ -339,7 +369,8 @@ def take_turn(game_data: GameData_a4, s: socket):
 
         return True
     else:
-        print(RESPONSE_MESSAGES(response_status))
+        # if STATUS_CODES.CLIENT_INVALID_REQUEST <= response_status <= STATUS_CODES.CLIENT_INVALID_PAYLOAD:
+        print(RESPONSE_MESSAGES[response_status])
         return False
 
 
@@ -394,27 +425,18 @@ def handshake(s: socket) -> int:
     :param s: {socket}  
     :return: {int} uid of player
     """
-    # packet = []
-    #
-    # # Start with 4 'empty' bytes
-    # empty_byte = 0
-    # confirmation = 1
-    # rule_set = 1
-    # protocol_version = 1
-    # game_id = 1
+    # Start with 4 'empty' bytes
+    empty_byte = 0
+    confirmation = 1
+    rule_set = 1
+    protocol_version = 1
+    game_id = 1
 
-    # packet.append(empty_byte.to_bytes(4, 'big'))
-    # packet.append(confirmation.to_bytes(1, 'big'))
-    # packet.append(rule_set.to_bytes(1, 'big'))
-    # packet.append(protocol_version.to_bytes(1, 'big'))
-    # packet.append(game_id.to_bytes(1, 'big'))
-
-    # s.sendall(packet)
-
-    packet_as_string = "00001111"
-    packet_as_byes = packet_as_string.encode()
-
-    s.send(packet_as_byes)
+    s.sendall(empty_byte.to_bytes(4, 'big'))
+    s.sendall(confirmation.to_bytes(1, 'big'))
+    s.sendall(rule_set.to_bytes(1, 'big'))
+    s.sendall(protocol_version.to_bytes(1, 'big'))
+    s.sendall(game_id.to_bytes(1, 'big'))
 
     uid = get_uid(s)
 
@@ -473,7 +495,7 @@ def main():
         version = 1
 
     if version not in (1, 2, 4):
-        print("Invalid version supplied")
+        print("Invalid version")
         exit(1)
 
     try:
