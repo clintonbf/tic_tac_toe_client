@@ -138,6 +138,9 @@ class GameData:
         if not play.strip().isdigit():  # Strangely, this returns false if value is negative
             return False
 
+        if int(play) > 8:
+            return False
+
         if not self.check_if_spot_is_played(int(play)):
             return False
 
@@ -201,7 +204,7 @@ class GameData_a4(GameData):
     def make_play(self, s: socket, invitation: str) -> str:
         proposed_play = -1
 
-        while 0 >= proposed_play >= 8:
+        while proposed_play < 0 or proposed_play > 8:
             proposed_play = input(invitation)
 
             if not self.is_play_valid(proposed_play):

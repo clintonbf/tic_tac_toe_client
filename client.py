@@ -159,17 +159,17 @@ def play_game_a4(host: str, port: int):
         game_data = GameData_a4()
 
         game_data.set_uid(handshake(s))
-        print("You have been assigned", game_data.get_uid())
+        print("You have been assigned player ID", game_data.get_uid())
 
         # Set identity_code
         message = get_message(s)
-        if message["header"]["msg_type"] == STATUS_CODES.UPDATE:
+
+        if message["header"]["msg_type"] == STATUS_CODES.UPDATE.value:
             game_data.set_identity(message["payload"][0])
 
-        print_message(message)
-        input("Continue?")
+        print("Welcome player", chr(game_data.get_identity()))
 
-        if game_data.get_identity() == IDs.X:
+        if game_data.get_identity() == IDs.X.value:
             turn_ok = False
             while not turn_ok:
                 turn_ok = take_turn(game_data, s)
@@ -216,7 +216,6 @@ def take_turn(game_data: GameData_a4, s: socket):
     packet = [game_data.get_uid(), action, context, 1, payload]
 
     s.sendall(bytes(packet))  # Sending a payload on a quit. Technically there shouldn't be one
-    # send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
 
     # Now get confirmation from Server
     play_response = get_message(s)
@@ -235,7 +234,7 @@ def take_turn(game_data: GameData_a4, s: socket):
         return False
 
 
-def send_packet(s: socket, packet: [int]):
+def send_packet(s: socket, packet: [int]):  # TODO Delete
     f"""
 
     :param s: {socket} TCP socket
@@ -274,13 +273,6 @@ def handshake(s: socket) -> int:
               protocol_version, game_id]
 
     s.sendall(bytes(packet))
-
-    # s.sendall(empty_byte.to_bytes(4, 'big'))
-    # s.sendall(confirmation.to_bytes(1, 'big'))
-    # s.sendall(rule_set.to_bytes(1, 'big'))
-    # s.sendall(payload_length.to_bytes(1, 'big'))
-    # s.sendall(protocol_version.to_bytes(1, 'big'))
-    # s.sendall(game_id.to_bytes(1, 'big'))
 
     uid = get_uid(s)
 
