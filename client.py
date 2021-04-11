@@ -348,13 +348,31 @@ def take_turn(game_data: GameData_a4, s: socket):
     proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
     if proposed_play == 'Q':
-        packet = create_play_packet(game_data.get_uid(), REQ_TYPES.META_ACTION.value, REQ_CONTEXTS.QUIT.value, 0)
-    else:
-        packet = create_play_packet(game_data.get_uid(), REQ_TYPES.GAME_ACTION.value, REQ_CONTEXTS.MAKE_MOVE.value,
-                                    int(proposed_play))
+        action = REQ_TYPES.META_ACTION.value
+        context = REQ_CONTEXTS.QUIT.value
+        payload = 0
 
-    s.sendall(packet)  # Sending a payload on a quit. Technically there shouldn't be one
-    # send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
+        # packet = [
+        #     game_data.get_uid(),
+        #     REQ_TYPES.META_ACTION.value,
+        #     REQ_CONTEXTS.QUIT.value,
+        #     0
+        # ]
+    else:
+        action = REQ_TYPES.GAME_ACTION.value
+        context = REQ_CONTEXTS.MAKE_MOVE.value
+        payload = int(proposed_play)
+
+        # packet = [
+        #     game_data.get_uid(),
+        #     REQ_TYPES.GAME_ACTION.value,
+        #     REQ_CONTEXTS.MAKE_MOVE.value,
+        #     int(proposed_play)
+        # ]
+
+    packet = [game_data.get_uid(), action, context, 1, payload]
+
+    send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
 
     # Now get confirmation from Server
     play_response = get_message(s)
@@ -369,12 +387,11 @@ def take_turn(game_data: GameData_a4, s: socket):
 
         return True
     else:
-        # if STATUS_CODES.CLIENT_INVALID_REQUEST <= response_status <= STATUS_CODES.CLIENT_INVALID_PAYLOAD:
         print(RESPONSE_MESSAGES[response_status])
         return False
 
 
-def create_play_packet(uid: int, msg_type: int, msg_context: int, proposed_play: int) -> [bytes]:
+def create_play_packet(uid: int, msg_type: int, msg_context: int, proposed_play: int) -> [int]:
     uuid_str = str(uid)
     msg_type_str = str(msg_type)
     msg_context_str = str(msg_context)
@@ -395,27 +412,24 @@ def create_play_packet(uid: int, msg_type: int, msg_context: int, proposed_play:
     return packet
 
 
-def send_packet(s: socket, packet: [bytes]):
-    """
+def send_packet(s: socket, packet: [int]):
+    f"""
 
-    :param s:
-    :param packet:
-    :return:
+    :param s: {socket} TCP socket
+    :param packet: {list} data to send
+    :return: {None}
     """
     # Packet is composed of
-    #   uuid (4 bytes)
-    #   status (1 byte)
-    #   context (1 byte)
-    #   payload length (1 byte)
-    #   payload (payload_length bytes)
+    #   uuid (4 bytes)                  [0]
+    #   status (1 byte)                 [1]
+    #   context (1 byte)                [2]
+    #   payload length (1 byte)         [3] # TTT moves are always 1 byte long. A convenient shortcut
+    #   payload (payload_length bytes)  [4]
 
-    payload_length = int.from_bytes(packet[6], 'big')
+    s.sendall(packet[0].to_bytes(4, 'big'))
 
-    payload_start = 7
-    payload_end = 7 + payload_length
-
-    for i in range(0, payload_end):
-        s.send(packet[i])
+    for i in range(1, len(packet)):
+        s.sendall(packet[i].to_bytes(1, 'big'))
 
 
 def handshake(s: socket) -> int:
