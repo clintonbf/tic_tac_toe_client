@@ -22,6 +22,11 @@ MAX_VERSION = 4
 GAME_ID = 1
 
 
+def print_message(message: dict):
+    print(message["header"])
+    print(message["payload"])
+
+
 def get_game_object(protocol_version: int) -> GameData:
     f"""
     Gets the correct game_data object.
@@ -161,6 +166,9 @@ def play_game_a4(host: str, port: int):
         if message["header"]["msg_type"] == STATUS_CODES.UPDATE:
             game_data.set_identity(message["payload"][0])
 
+        print_message(message)
+        input("Continue?")
+
         if game_data.get_identity() == IDs.X:
             turn_ok = False
             while not turn_ok:
@@ -207,7 +215,8 @@ def take_turn(game_data: GameData_a4, s: socket):
 
     packet = [game_data.get_uid(), action, context, 1, payload]
 
-    send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
+    s.sendall(bytes(packet))  # Sending a payload on a quit. Technically there shouldn't be one
+    # send_packet(s, packet)  # Sending a payload on a quit. Technically there shouldn't be one
 
     # Now get confirmation from Server
     play_response = get_message(s)
@@ -261,12 +270,17 @@ def handshake(s: socket) -> int:
     protocol_version = 1
     game_id = 1
 
-    s.sendall(empty_byte.to_bytes(4, 'big'))
-    s.sendall(confirmation.to_bytes(1, 'big'))
-    s.sendall(rule_set.to_bytes(1, 'big'))
-    s.sendall(payload_length.to_bytes(1, 'big'))
-    s.sendall(protocol_version.to_bytes(1, 'big'))
-    s.sendall(game_id.to_bytes(1, 'big'))
+    packet = [empty_byte, empty_byte, empty_byte, empty_byte, confirmation, rule_set, payload_length,
+              protocol_version, game_id]
+
+    s.sendall(bytes(packet))
+
+    # s.sendall(empty_byte.to_bytes(4, 'big'))
+    # s.sendall(confirmation.to_bytes(1, 'big'))
+    # s.sendall(rule_set.to_bytes(1, 'big'))
+    # s.sendall(payload_length.to_bytes(1, 'big'))
+    # s.sendall(protocol_version.to_bytes(1, 'big'))
+    # s.sendall(game_id.to_bytes(1, 'big'))
 
     uid = get_uid(s)
 
