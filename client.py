@@ -6,12 +6,8 @@ e-mail: clintonf@gmail.com
 """
 
 import argparse
-import socket
-from game_data import GameData
-from game_data import GameData_v2
-from game_data import GameData_a4
+from game_data import *
 from metadata import *
-
 
 hosts = {
     'emerald': '24.85.240.252',
@@ -20,23 +16,18 @@ hosts = {
     'clint': '74.157.196.143'
 }
 
-HOST = hosts['macair']  # The server's hostname or IP address
-# PORT = 65432  # The port used by the server
-PORT = 40000  # The port used by the server
+DEFAULT_HOST = hosts['macair']  # The server's hostname or IP address
+DEFAULT_PORT = 42069  # The port used by the server
 MAX_VERSION = 4
 GAME_ID = 1
 
 
-def convert_to_bytes(val, number_of_bytes: int = 1) -> bytes:
-    return int(val).to_bytes(number_of_bytes, 'big')
-
-
 def get_game_object(protocol_version: int) -> GameData:
-    """
+    f"""
     Gets the correct game_data object.
 
-    :param protocol_version: protocol version of game
-    :return: GameData
+    :param protocol_version: {int} protocol version of game
+    :return: {GameData}
     """
     if protocol_version == 1:
         return GameData()
@@ -45,9 +36,12 @@ def get_game_object(protocol_version: int) -> GameData:
     if protocol_version == 4:
         return GameData_a4()
 
+    print("Invalid protocol specified")
+    exit(1)
 
-def get_header(s: socket):
-    """
+
+def get_header(s: socket) -> dict:
+    f"""
     Gets the header from a TCP packet.
 
     :param s: {socket} TCP socket
@@ -80,7 +74,7 @@ def get_payload(s: socket, header: dict) -> list:
 
 
 def get_message(s: socket) -> dict:
-    """
+    f"""
     Gets a message from the server.
 
     :param s: {socket} TCP socket
@@ -89,9 +83,9 @@ def get_message(s: socket) -> dict:
     header = get_header(s)
     payload = get_payload(s, header)
 
-    d = {'header': header, 'payload': payload}
+    message = {'header': header, 'payload': payload}
 
-    return d
+    return message
 
 
 def play_game(host: str, port: int, protocol_version: int = 1):
@@ -195,6 +189,8 @@ def play_game_a4(host: str, port: int):
 
                     print("You", EOF_MESSAGES.outcome)
                     exit(0)
+            else:
+                print("Unexpected message received from server")
 
 
 def take_turn(game_data: GameData_a4, s: socket):
@@ -204,24 +200,10 @@ def take_turn(game_data: GameData_a4, s: socket):
         action = REQ_TYPES.META_ACTION.value
         context = REQ_CONTEXTS.QUIT.value
         payload = 0
-
-        # packet = [
-        #     game_data.get_uid(),
-        #     REQ_TYPES.META_ACTION.value,
-        #     REQ_CONTEXTS.QUIT.value,
-        #     0
-        # ]
     else:
         action = REQ_TYPES.GAME_ACTION.value
         context = REQ_CONTEXTS.MAKE_MOVE.value
         payload = int(proposed_play)
-
-        # packet = [
-        #     game_data.get_uid(),
-        #     REQ_TYPES.GAME_ACTION.value,
-        #     REQ_CONTEXTS.MAKE_MOVE.value,
-        #     int(proposed_play)
-        # ]
 
     packet = [game_data.get_uid(), action, context, 1, payload]
 
@@ -242,27 +224,6 @@ def take_turn(game_data: GameData_a4, s: socket):
     else:
         print(RESPONSE_MESSAGES[response_status])
         return False
-
-
-def create_play_packet(uid: int, msg_type: int, msg_context: int, proposed_play: int) -> [int]:
-    uuid_str = str(uid)
-    msg_type_str = str(msg_type)
-    msg_context_str = str(msg_context)
-    p_play_str = str(proposed_play)
-    payload_length_str = str(len(p_play_str))
-
-    packet_as_string = uuid_str + msg_type_str + msg_context_str + payload_length_str + p_play_str
-    packet = packet_as_string.encode()
-
-    # packet = []
-    # packet.append(convert_to_bytes(uid, 4))
-    # packet.append(convert_to_bytes(msg_type))
-    # packet.append(convert_to_bytes(REQ_CONTEXTS.MAKE_MOVE))
-    # payload_length = 1
-    # packet.append(convert_to_bytes(payload_length_str))
-    # packet.append(convert_to_bytes(proposed_play, payload_length_str))
-
-    return packet
 
 
 def send_packet(s: socket, packet: [int]):
@@ -352,7 +313,7 @@ def create_arguments() -> argparse:
 
     parser.add_argument("host", help="server IP address")
     parser.add_argument("--version", help=protocol_help, type=int)
-    parser.add_argument("--port", help="server port #. Default = " + str(PORT))
+    parser.add_argument("--port", help="server port #. Default = " + str(DEFAULT_PORT))
 
     return parser
 
@@ -371,7 +332,7 @@ def main():
     try:
         port = int(args.port)
     except TypeError:
-        port = PORT
+        port = DEFAULT_PORT
 
     play_game(args.host, port, version)
 
