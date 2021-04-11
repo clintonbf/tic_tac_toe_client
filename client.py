@@ -23,6 +23,12 @@ GAME_ID = 1
 
 
 def print_message(message: dict):
+    f"""
+    Prints out a packet representation for debug purposes.
+    
+    :param message: {dict} representation of the data packet 
+    :return: {None}
+    """
     print(message["header"])
     print(message["payload"])
 
@@ -178,27 +184,29 @@ def play_game_a4(host: str, port: int):
         while True:
             server_message = get_message(s)
 
-            if server_message["header"]["msg_type"] == STATUS_CODES.UPDATE:
-                if server_message["header"]["context"] == UPD_CONTEXTS.MOVE_MADE:
-                    adversarys_play = server_message["payload"][0]
-                    game_data.update_board(adversarys_play, game_data.get_adversary())
+            msg_type = server_message["header"]["msg_type"]
+            msg_context = server_message["header"]["context"]
+
+            if msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.MOVE_MADE.value:
+                adversarys_play = server_message["payload"][0]
+                game_data.update_board(adversarys_play, game_data.get_adversary())
+                game_data.print_board()
+
+                turn_ok = False
+                while not turn_ok:
+                    turn_ok = take_turn(game_data, s)
+            elif msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.END_OF_GAME.value:
+                outcome = server_message["payload"][0]
+
+                if outcome != OUTCOMES.WIN.value:
+                    game_data.update_board(server_message["payload"][1], game_data.get_adversary())
                     game_data.print_board()
 
-                    turn_ok = False
-                    while not turn_ok:
-                        turn_ok = take_turn(game_data, s)
-
-                if server_message["header"]["context"] == UPD_CONTEXTS.END_OF_GAME:
-                    outcome = server_message["payload"][0]
-
-                    if outcome != OUTCOMES.WIN:
-                        game_data.update_board(server_message["payload"][1], game_data.get_adversary())
-                        game_data.print_board()
-
-                    print("You", EOF_MESSAGES.outcome)
-                    exit(0)
+                print("You", EOF_MESSAGES[outcome])
+                exit(0)
             else:
                 print("Unexpected message received from server")
+                print(server_message)
 
 
 def take_turn(game_data: GameData_a4, s: socket):
@@ -221,7 +229,7 @@ def take_turn(game_data: GameData_a4, s: socket):
     play_response = get_message(s)
     response_status = play_response["header"]["msg_type"]
 
-    if response_status == STATUS_CODES.SUCCESS:
+    if response_status == STATUS_CODES.SUCCESS.value:
         game_data.update_board(proposed_play, game_data.get_identity())
         game_data.print_board()
 
