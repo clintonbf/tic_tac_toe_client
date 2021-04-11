@@ -65,7 +65,7 @@ class GameData:
     def set_identity(self, identity_code:int):
         self.__identity = 88 if identity_code == 1 else 79
 
-        self.__adversary = 79 if identity_code == 88 else 88
+        self.__adversary = 79 if identity_code == 2 else 88
 
     def get_adversary(self) -> int:
         return self.__adversary
