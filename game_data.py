@@ -53,7 +53,7 @@ class GameData:
         self.__version = 1
         self.__adversary = None
 
-    def get_identity(self):
+    def get_identity(self) -> int:
         return self.__identity
 
     def get_game_board(self):
@@ -76,8 +76,8 @@ class GameData:
     def set_bytes_to_expect(self, bytes_to_expect):
         self.__bytes_to_expect = bytes_to_expect
 
-    def set_play(self, position, identity=get_identity):
-        self.__game_board[position] = self.__identity
+    def set_play(self, position: int, identity: int = get_identity()):
+        self.__game_board[position] = identity
 
     def print_board(self):
         """
