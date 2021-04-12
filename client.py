@@ -221,10 +221,7 @@ def take_turn(game_data: GameData_a4, s: socket):
         context = REQ_CONTEXTS.MAKE_MOVE.value
         payload = int(proposed_play)
 
-    packet_part_1 = game_data.get_uid().to_bytes(4, 'big')
-    packet = [action, context, 1, payload]
-
-    packet.insert(0, packet_part_1)
+    packet = [game_data.get_uid(), action, context, 1, payload]
 
     s.sendall(bytes(packet))  # Sending a payload on a quit. Technically there shouldn't be one
 
