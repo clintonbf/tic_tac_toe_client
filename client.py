@@ -16,7 +16,7 @@ hosts = {
     'clint': '74.157.196.143'
 }
 
-DEFAULT_HOST = hosts["macair"]  # The server's hostname or IP address
+DEFAULT_HOST = hosts['macair']  # The server's hostname or IP address
 DEFAULT_PORT = 42069  # The port used by the server
 MAX_VERSION = 4
 GAME_ID = 1
@@ -221,10 +221,7 @@ def take_turn(game_data: GameData_a4, s: socket):
         context = REQ_CONTEXTS.MAKE_MOVE.value
         payload = int(proposed_play)
 
-    packet_part_1 = game_data.get_uid().to_bytes(4, 'big')
-    packet = [action, context, 1, payload]
-
-    packet.insert(0, packet_part_1)
+    packet = [0,0,0,game_data.get_uid(), action, context, 1, payload]
 
     s.sendall(bytes(packet))  # Sending a payload on a quit. Technically there shouldn't be one
 
@@ -303,6 +300,8 @@ def get_uid(s: socket) -> int:
     msg_context = int.from_bytes(s.recv(1), 'big')
     payload_length = int.from_bytes(s.recv(1), 'big')
     uid = int.from_bytes(s.recv(payload_length), 'big')
+
+    print("Payload length is", )
 
     if msg_type == 32:
         msg_code = uid
