@@ -62,7 +62,7 @@ class GameData:
     def get_bytes_to_expect(self):
         return self.__bytes_to_expect
 
-    def set_identity(self, identity_code:int):
+    def set_identity(self, identity_code: int):
         self.__identity = 88 if identity_code == 1 else 79
 
         self.__adversary = 79 if identity_code == 2 else 88
