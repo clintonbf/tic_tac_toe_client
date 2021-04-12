@@ -76,7 +76,7 @@ class GameData:
     def set_bytes_to_expect(self, bytes_to_expect):
         self.__bytes_to_expect = bytes_to_expect
 
-    def set_play(self, position):
+    def set_play(self, position, identity=get_identity):
         self.__game_board[position] = self.__identity
 
     def print_board(self):
@@ -198,9 +198,6 @@ class GameData_a4(GameData):
     def get_uid_as_bytes(self) -> bytes:
         return int(self.__uid).to_bytes(UID_LENGTH, 'big')
 
-    def update_board(self, place, player):
-        self.__game_board[place] = player
-
     def make_play(self, s: socket, invitation: str) -> str:
         proposed_play = input(invitation)
 
@@ -218,6 +215,9 @@ class GameData_a4(GameData):
             return True
 
         return super().is_play_valid(play)
+
+    def update_board(self, place, player):
+        self.set_play(place, player)
 
     def __str__(self):
         me = "Game ID: " + str(self.__uid) + " Protocol version: " + str(
