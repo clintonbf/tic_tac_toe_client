@@ -220,7 +220,7 @@ class GameData_a4(GameData):
         return super().is_play_valid(play)
 
     def update_board(self, place, player):
-        self.set_play(place, player)
+        self.set_play(int(place), player)
 
     def __str__(self):
         me = "Game ID: " + str(self.__uid) + " Protocol version: " + str(
