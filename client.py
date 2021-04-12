@@ -16,7 +16,7 @@ hosts = {
     'clint': '74.157.196.143'
 }
 
-DEFAULT_HOST = hosts["macair"]  # The server's hostname or IP address
+DEFAULT_HOST = hosts['macair']  # The server's hostname or IP address
 DEFAULT_PORT = 42069  # The port used by the server
 MAX_VERSION = 4
 GAME_ID = 1
@@ -300,6 +300,8 @@ def get_uid(s: socket) -> int:
     msg_context = int.from_bytes(s.recv(1), 'big')
     payload_length = int.from_bytes(s.recv(1), 'big')
     uid = int.from_bytes(s.recv(payload_length), 'big')
+
+    print("Payload length is", )
 
     if msg_type == 32:
         msg_code = uid
