@@ -92,7 +92,13 @@ def get_message(s: socket) -> dict:
     :return: {dict} the header and payload data
     """
     header = get_header(s)
-    payload = get_payload(s, header)
+
+    payload_length = header["payload_length"]
+
+    if payload_length != 0:
+        payload = get_payload(s, header)
+    else:
+        payload = {"payload": None}
 
     message = {'header': header, 'payload': payload}
 
@@ -182,6 +188,7 @@ def play_game_a4(host: str, port: int):
 
         # So, now we wait for an update message.
         while True:
+            print("Waiting for player to play")
             server_message = get_message(s)
 
             msg_type = server_message["header"]["msg_type"]
@@ -221,9 +228,13 @@ def take_turn(game_data: GameData_a4, s: socket):
         context = REQ_CONTEXTS.MAKE_MOVE.value
         payload = int(proposed_play)
 
-    packet = [game_data.get_uid(), action, context, 1, payload]
+    packet_part_1 = int(game_data.get_uid()).to_bytes(4, 'little')
+    packet = bytearray(packet_part_1)
+    packet_part_2 = bytearray([action, context, 1, payload])
 
-    s.sendall(bytes(packet))  # Sending a payload on a quit. Technically there shouldn't be one
+    packet.extend(packet_part_2)
+
+    s.send(packet)  # Sending a payload on a quit. Technically there shouldn't be one
 
     # Now get confirmation from Server
     play_response = get_message(s)
