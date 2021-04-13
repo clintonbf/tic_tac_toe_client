@@ -232,7 +232,7 @@ def take_turn(game_data: GameData_a4, s: socket):
     # send_packet_one(s, game_data.get_uid(), action, context, 1, payload)  # Janky-ass
     # send_packet_two(s, game_data.get_uid(), action, context, 1, payload)  # Padding cheat
     # send_packet_three(s, game_data.get_uid(), action, context, 1, payload)  # New hotness?
-    #send_packet_four(s, game_data.get_uid(), action, context, 1, payload)  # New new hotness?
+    # send_packet_four(s, game_data.get_uid(), action, context, 1, payload)  # New new hotness?
     send_packet_five(s, game_data.get_uid(), action, context, 1, payload)  # New new new hotness?
 
     # Now get confirmation from Server
@@ -320,11 +320,9 @@ def send_packet_four(s: socket, uid: int, action: int, context: int, payload_len
 
 
 def send_packet_five(s: socket, uid: int, action: int, context: int, payload_length: int, payload: int):
-    x = pack("!l", uid)
-    y = pack("!", action, context, payload_length, payload)
-    z = pack("!", x, y)
+    x = pack("!lhhhh", uid, action, context, payload_length, payload)
 
-    s.sendall(z)
+    s.sendall(x)
 
 
 def send_packet(s: socket, packet: [int]):  # TODO Delete
