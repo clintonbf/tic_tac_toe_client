@@ -223,13 +223,17 @@ def take_turn(game_data: GameData_a4, s: socket):
     if proposed_play == 'Q':
         action = REQ_TYPES.META_ACTION.value
         context = REQ_CONTEXTS.QUIT.value
-        payload = 0
+        payload_length = 0
+
+        packet = pack("!LBBB", game_data.get_uid(), action, context, payload_length)
     else:
         action = REQ_TYPES.GAME_ACTION.value
         context = REQ_CONTEXTS.MAKE_MOVE.value
         payload = int(proposed_play)
+        payload_length = 1
 
-    packet = pack("!LBBBB", game_data.get_uid(), action, context, 1, payload)
+        packet = pack("!LBBBB", game_data.get_uid(), action, context, payload_length, payload)
+
     s.sendall(packet)
 
     # Now get confirmation from Server
@@ -247,6 +251,7 @@ def take_turn(game_data: GameData_a4, s: socket):
     else:  # TODO Handle errors
         print(RESPONSE_MESSAGES[response_status])
         return False
+
 
 def handshake(s: socket) -> int:
     f"""
