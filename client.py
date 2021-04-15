@@ -290,7 +290,7 @@ def get_uid(s: socket) -> int:
     msg_type = int.from_bytes(s.recv(1), 'big')
     msg_context = int.from_bytes(s.recv(1), 'big')
     payload_length = int.from_bytes(s.recv(1), 'big')
-    uid = int.from_bytes(s.recv(payload_length), 'big')
+    uid = int.from_bytes(s.recv(payload_length), 'little')
 
     print("Payload length is", )
 

@@ -199,7 +199,7 @@ class GameData_a4(GameData):
         return self.__uid
 
     def get_uid_as_bytes(self) -> bytes:
-        return int(self.__uid).to_bytes(UID_LENGTH, 'big')
+        return int(self.__uid).to_bytes(UID_LENGTH, 'little')
 
     def make_play(self, s: socket, invitation: str) -> str:
         proposed_play = input(invitation)
