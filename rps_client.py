@@ -4,7 +4,6 @@ from game_data import *
 from protocol import *
 
 MAX_VERSION = 4
-DEFAULT_PORT = 2034
 GAME_ID = 2
 
 

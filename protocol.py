@@ -1,6 +1,8 @@
 import socket
 from metadata import *
 
+DEFAULT_PORT = 2034
+
 
 def get_message(s: socket) -> dict:
     f"""
