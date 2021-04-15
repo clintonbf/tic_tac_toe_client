@@ -226,3 +226,39 @@ class GameData_a4(GameData):
         me = "Game ID: " + str(self.__uid) + " Protocol version: " + str(
             self.get_version()) + " Player identity_code: " + chr(self.get_identity())
         return me
+
+
+class GameData_rps(GameData_a4):
+    def __init__(self):
+        super().__init__()
+        __my_play = None
+        __adversary_play = None
+
+    def make_play(self, s: socket, invitation: str) -> int:
+        proposed_play = input(invitation)
+
+        while not self.is_play_valid(proposed_play):
+            print("Invalid play")
+            proposed_play = input(invitation)
+
+        return self.convert_play_to_int(proposed_play)
+
+
+    def is_play_valid(self, play:str) -> bool:  # Will this method get called, or the parent method??
+        if play in ('r', 'R', 'p', 'P', 's', 'S', 'q', 'Q'):
+            return True
+
+        return False
+
+    def convert_play_to_int(self, play: str) -> int:
+        if play in ('r', 'R'):
+            return 1
+
+        if play in ('p', 'P'):
+            return 2
+
+        if play in ('s', 'S'):
+            return 3
+
+        print("Unknown play received")
+        exit(1)
