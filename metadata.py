@@ -39,8 +39,8 @@ IDENTITIES = {
 class IDs(enum.Enum):
     X = 88
     O = 79
-    x = 88
-    o = 79
+    x = X
+    o = O
 
 
 class STATUS_CODES(enum.Enum):
@@ -100,16 +100,6 @@ RESPONSE_MESSAGES = {
 }
 
 
-# class RESPONSE_MESSAGES(enum.Enum):
-#     CLIENT_ERRORS.INVALID_REQUEST = "Invalid request"
-#     CLIENT_ERRORS.INVALID_UID = "Invalid uid supplied"
-#     CLIENT_ERRORS.INVALID_TYPE.value = "Invalid msg_type"
-#     CLIENT_ERRORS.INVALID_CONTEXT.value = "Invalid context supplied"
-#     CLIENT_ERRORS.INVALID_PAYLOAD.value = "Invalid payload supplied"
-#     GAME_ERRORS.INVALID_ACTION.value = "Invalid play"
-#     GAME_ERRORS.ACTION_OUT_OF_TURN.value = "Not your turn"
-
-
 class REQ_CONTEXTS(enum.Enum):
     CONFIRM_RULESET = 1
     MAKE_MOVE = 1
@@ -126,6 +116,7 @@ class OUTCOMES(enum.Enum):
     WIN = 1
     LOSS = 2
     TIE = 3
+
 
 class RPS_PLAYS(enum.Enum):
     ROCK = 1

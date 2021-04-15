@@ -9,8 +9,6 @@ GAME_ID = 2
 
 
 def play_game(host: str, port: int):
-    adversarys_play = 0
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
 
@@ -48,8 +46,6 @@ def play_game(host: str, port: int):
 
             if adversarys_play == RPS_PLAYS.SCISSORS.value:
                 adversarys_play = "Scissors"
-
-
 
             outcome = server_message["payload"][0]
 
