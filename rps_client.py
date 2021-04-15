@@ -9,6 +9,8 @@ GAME_ID = 2
 
 
 def play_game(host: str, port: int):
+    adversarys_play = 0
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
 
@@ -26,31 +28,26 @@ def play_game(host: str, port: int):
         while not turn_ok:
             turn_ok = take_turn(game_data, s)
 
-        while True:
-            print("Waiting for player to play")
-            server_message = get_message(s)
+        print("Waiting for player to play")
+        server_message = get_message(s)
 
-            msg_type = server_message["header"]["msg_type"]
-            msg_context = server_message["header"]["context"]
+        msg_type = server_message["header"]["msg_type"]
+        msg_context = server_message["header"]["context"]
 
-            if msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.MOVE_MADE.value:
-                adversarys_play = server_message["payload"][0]
+        if msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.MOVE_MADE.value:
+            adversarys_play = server_message["payload"][0]
 
-                turn_ok = False
-                while not turn_ok:
-                    turn_ok = take_turn(game_data, s)
-            elif msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.END_OF_GAME.value:
-                outcome = server_message["payload"][0]
+            turn_ok = False
+            while not turn_ok:
+                turn_ok = take_turn(game_data, s)
+        elif msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.END_OF_GAME.value:
+            outcome = server_message["payload"][0]
 
-                if outcome != OUTCOMES.WIN.value:
-                    game_data.update_board(server_message["payload"][1], game_data.get_adversary())
-                    game_data.print_board()
-
-                print("You", EOF_MESSAGES[outcome], ". Opponent played", adversarys_play)
-                exit(0)
-            else:
-                print("Unexpected message received from server")
-                print(server_message)
+            print("You", EOF_MESSAGES[outcome], ". Opponent played", adversarys_play)
+            exit(0)
+        else:
+            print("Unexpected message received from server")
+            print(server_message)
 
 
 def take_turn(game_data: GameData_a4, s: socket):
@@ -77,9 +74,6 @@ def take_turn(game_data: GameData_a4, s: socket):
     response_status = play_response["header"]["msg_type"]
 
     if response_status == STATUS_CODES.SUCCESS.value:
-        game_data.update_board(proposed_play, game_data.get_identity())
-        game_data.print_board()
-
         if proposed_play == 'Q':
             exit(0)
 
