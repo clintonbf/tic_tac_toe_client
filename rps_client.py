@@ -35,15 +35,25 @@ def play_game(host: str, port: int):
         msg_context = server_message["header"]["context"]
 
         if msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.MOVE_MADE.value:
-            adversarys_play = server_message["payload"][0]
+            pass
 
-            turn_ok = False
-            while not turn_ok:
-                turn_ok = take_turn(game_data, s)
         elif msg_type == STATUS_CODES.UPDATE.value and msg_context == UPD_CONTEXTS.END_OF_GAME.value:
+            adversarys_play = server_message["payload"][1]
+
+            if adversarys_play == RPS_PLAYS.ROCK.value:
+                adversarys_play = "Rock"
+
+            if adversarys_play == RPS_PLAYS.PAPER.value:
+                adversarys_play = "Paper"
+
+            if adversarys_play == RPS_PLAYS.SCISSORS.value:
+                adversarys_play = "Scissors"
+
+
+
             outcome = server_message["payload"][0]
 
-            print("You", EOF_MESSAGES[outcome], ". Opponent played", adversarys_play)
+            print("You", EOF_MESSAGES[outcome], " Opponent played", adversarys_play)
             exit(0)
         else:
             print("Unexpected message received from server")

@@ -127,6 +127,11 @@ class OUTCOMES(enum.Enum):
     LOSS = 2
     TIE = 3
 
+class RPS_PLAYS(enum.Enum):
+    ROCK = 1
+    PAPER = 2
+    SCISSORS = 3
+
 
 # class EOF_MESSAGES(enum.Enum):
 #     OUTCOMES.WIN = " win!"
