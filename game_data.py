@@ -1,4 +1,5 @@
 import socket
+from metadata import ENDIANNESS
 
 UID_LENGTH = 4
 
@@ -199,7 +200,7 @@ class GameData_a4(GameData):
         return self.__uid
 
     def get_uid_as_bytes(self) -> bytes:
-        return int(self.__uid).to_bytes(UID_LENGTH, 'little')
+        return int(self.__uid).to_bytes(UID_LENGTH, ENDIANNESS)
 
     def make_play(self, s: socket, invitation: str) -> str:
         proposed_play = input(invitation)
@@ -243,8 +244,7 @@ class GameData_rps(GameData_a4):
 
         return self.convert_play_to_int(proposed_play)
 
-
-    def is_play_valid(self, play:str) -> bool:  # Will this method get called, or the parent method??
+    def is_play_valid(self, play: str) -> bool:  # Will this method get called, or the parent method??
         if play in ('r', 'R', 'p', 'P', 's', 'S', 'q', 'Q'):
             return True
 

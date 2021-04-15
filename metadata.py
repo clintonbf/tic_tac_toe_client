@@ -1,5 +1,7 @@
 import enum
 
+ENDIANNESS = 'little'
+
 CODES = {
     "WELCOME": 1,
     "INVITE": 4,

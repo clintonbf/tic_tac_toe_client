@@ -1,74 +1,20 @@
 import argparse
 from struct import *
 from game_data import *
-from metadata import *
+from protocol import *
 
 MAX_VERSION = 4
 DEFAULT_PORT = 2034
 GAME_ID = 2
 
 
-def get_header(s: socket) -> dict:
-    f"""
-    Gets the header from a TCP packet.
-
-    :param s: {socket} TCP socket
-    :return: {dict} details of the packet header
-    """
-    msg_type = int.from_bytes(s.recv(1), 'big')
-    msg_context = int.from_bytes(s.recv(1), 'big')
-    payload_length = int.from_bytes(s.recv(1), 'big')
-
-    header = {"msg_type": msg_type, "context": msg_context, "payload_length": payload_length}
-
-    return header
-
-
-def get_payload(s: socket, header: dict) -> list:
-    f"""
-    Gets the payload from a server.
-
-    :param s: {socket} TCP socket 
-    :param header: {dict} the packet header 
-    :return: {list} the payload message
-    """
-
-    payload = []
-
-    for i in range(0, header['payload_length']):
-        payload.append(int.from_bytes(s.recv(1), 'big'))
-
-    return payload
-
-
-def get_message(s: socket) -> dict:
-    f"""
-    Gets a message from the server.
-
-    :param s: {socket} TCP socket
-    :return: {dict} the header and payload data
-    """
-    header = get_header(s)
-
-    payload_length = header["payload_length"]
-
-    if payload_length != 0:
-        payload = get_payload(s, header)
-    else:
-        payload = {"payload": None}
-
-    message = {'header': header, 'payload': payload}
-
-    return message
-
-
 def play_game(host: str, port: int):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
 
-        game_data = GameData_a4()
+        game_data = GameData_rps()
 
-        game_data.set_uid(handshake(s))
+        game_data.set_uid(handshake(s, GAME_ID))
         print("You have been assigned player ID", game_data.get_uid())
 
         message = get_message(s)
@@ -107,31 +53,6 @@ def play_game(host: str, port: int):
                 print(server_message)
 
 
-def handshake(s: socket) -> int:
-    f"""
-    Sends the handshake for ttt.
-
-    :param s: {socket}  
-    :return: {int} uid of player
-    """
-    # Start with 4 'empty' bytes
-    empty_byte = 0
-    confirmation = 1
-    rule_set = 1
-    payload_length = 2
-    protocol_version = 1
-    game_id = 1
-
-    packet = [empty_byte, empty_byte, empty_byte, empty_byte, confirmation, rule_set, payload_length,
-              protocol_version, game_id]
-
-    s.sendall(bytes(packet))
-
-    uid = get_uid(s)
-
-    return uid
-
-
 def take_turn(game_data: GameData_a4, s: socket):
     proposed_play = game_data.make_play(s, MESSAGES[CODES["INVITE"]])
 
@@ -166,30 +87,6 @@ def take_turn(game_data: GameData_a4, s: socket):
     else:  # TODO Handle errors
         print(RESPONSE_MESSAGES[response_status])
         return False
-
-
-def get_uid(s: socket) -> int:
-    f"""
-    Gets the player's uid from the server.
-
-    :param s: {socket} TCP socket connection 
-    :return: {int}
-    """
-
-    # header = s.recv(2)  # Will this receive into a list of 2?
-    msg_type = int.from_bytes(s.recv(1), 'big')
-    msg_context = int.from_bytes(s.recv(1), 'big')
-    payload_length = int.from_bytes(s.recv(1), 'big')
-    uid = int.from_bytes(s.recv(payload_length), 'little')
-
-    print("Payload length is", )
-
-    if msg_type == 32:
-        msg_code = uid
-        print(STATUS_MESSAGES[msg_code])
-        exit(1)
-
-    return uid
 
 
 def create_arguments() -> argparse:
