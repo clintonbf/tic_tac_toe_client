@@ -4,7 +4,9 @@ Two versions:
 * ttt_client: Tic Tac Toe
 * rps_client: Rock Paper Scissors
 
-**Note** that python 3 is required. Code was tested with 3.8 but I *think* anything 3.0+ is fine.
+**Notes** 
+* python 3 is required. Code was tested with 3.8 but I *think* anything 3.0+ is fine
+* default port is 2034
 
 ### TTT
 
