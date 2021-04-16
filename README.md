@@ -6,7 +6,7 @@ Two versions:
 
 **Note** that python 3 is required. Code was tested with 3.8 but I *think* anything 3.0+ is fine.
 
-#3 TTT
+### TTT
 
 usage (TTT): 
 ```python
@@ -15,7 +15,7 @@ python3 ttt_client.py [--version v] [--port p] HOST
 
 For COMP 3980, final project, use version = 4
 
-#3 RPS
+### RPS
 
 usage (RPS): 
 ```python
