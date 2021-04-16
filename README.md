@@ -5,8 +5,12 @@ Two versions:
 * rps_client: Rock Paper Scissors
 
 usage (TTT): 
-[code] python3 ttt_client.py HOST [--version v] [--port p][/code]
+```python
+python3 ttt_client.py HOST [--version v] [--port p]
+```
 
 usage (RPS): 
-[code] python3 rps_client.py HOST [--port p][/code]
+```python
+python3 rps_client.py HOST [--port p]
+```
 
