@@ -10,7 +10,7 @@ Two versions:
 
 usage (TTT): 
 ```python
-python3 ttt_client.py HOST [--version v] [--port p]
+python3 ttt_client.py [--version v] [--port p] HOST
 ```
 
 For COMP 3980, final project, use version = 4
@@ -19,7 +19,7 @@ For COMP 3980, final project, use version = 4
 
 usage (RPS): 
 ```python
-python3 rps_client.py HOST [--port p]
+python3 rps_client.py [--port p] HOST
 ```
 
 There is no version argument for RPS
